@@ -1,7 +1,11 @@
-# Phase 1 Compose lives at the repository root so `docker compose up -d` works.
+# Compose
 
-# Preferred:
-#   docker compose up -d
-#
-# This starts OrdersDb (localhost:5433) and CatalogDb (localhost:5434).
-# Application containers, RabbitMQ, Kafka, and observability arrive in later phases.
+```bash
+docker compose up --build -d
+docker compose ps
+docker compose down
+```
+
+Phase 2 starts PostgreSQL (orders, catalog, inventory, payments, notifications), RabbitMQ, Kafka (KRaft), and the application images.
+
+Host ports are listed in the root README. Kafka from the host is `localhost:9092`. Containers use `kafka:9094`.

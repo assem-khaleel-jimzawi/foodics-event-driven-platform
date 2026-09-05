@@ -18,11 +18,15 @@ FoodFlow therefore uses:
 
 ## Current Delivery Phase
 
-**Phase 1 — Foundation and service architecture** is implemented.
+**Phase 2 — Event-driven order processing** is implemented.
 
-Phase 1 includes the solution, service boundaries, Orders and Catalog HTTP/persistence slices, PostgreSQL, health endpoints, OpenAPI, domain tests, and documentation.
+Phase 1 established service boundaries, Orders/Catalog HTTP and persistence, PostgreSQL, health, OpenAPI, and domain tests.
 
-Phase 1 does **not** include RabbitMQ, Kafka, MassTransit, outbox, inbox, sagas, or the full Docker topology. Those start in Phase 2 after an explicit go-ahead.
+Phase 2 adds RabbitMQ, MassTransit, Kafka, transactional outbox, inbox idempotency, retries, dead-letter, choreographed compensation, Notifications, Analytics, Docker Compose for the brokers, and integration tests.
+
+Phase 3 (OpenTelemetry dashboards) is **not** started.
+
+The interview walkthrough is [docs/phase-2-event-driven.md](docs/phase-2-event-driven.md).
 
 ## Architecture
 
@@ -30,157 +34,125 @@ Phase 1 does **not** include RabbitMQ, Kafka, MassTransit, outbox, inbox, sagas,
 flowchart LR
   Client[Client] --> OrdersApi[Orders API]
   Client --> CatalogApi[Catalog API]
-
-  OrdersApi --> OrdersDb[(OrdersDb PostgreSQL)]
-  CatalogApi --> CatalogDb[(CatalogDb PostgreSQL)]
-
-  subgraph phase2 [Phase 2 - not wired yet]
-    OrdersApi -.OrderCreated.-> RabbitMQ[[RabbitMQ]]
-    RabbitMQ --> Inventory[Inventory]
-    Inventory --> Payments[Payments]
-    Payments --> OrdersApi
-    OrdersApi --> Notifications[Notifications Worker]
-    OrdersApi -.analytics events.-> Kafka[[Kafka]]
-    Kafka --> Analytics[Analytics Worker]
-  end
-```
-
-Planned operational workflow (Phase 2):
-
-```mermaid
-sequenceDiagram
-  participant C as Client
-  participant O as Orders
-  participant I as Inventory
-  participant P as Payments
-  participant N as Notifications
-  C->>O: POST /api/orders
-  O->>O: Persist order + outbox
-  O->>I: OrderCreated / ReserveInventory
-  I-->>O: InventoryReserved
-  O->>P: ProcessPayment
-  P-->>O: PaymentCompleted
-  O->>O: OrderConfirmed
-  O->>N: OrderConfirmed
+  OrdersApi --> OrdersDb[(OrdersDb)]
+  CatalogApi --> CatalogDb[(CatalogDb)]
+  OrdersApi -->|outbox| RabbitMQ[[RabbitMQ]]
+  OrdersApi -->|outbox| Kafka[[Kafka]]
+  RabbitMQ --> Inventory[Inventory]
+  Inventory --> InventoryDb[(InventoryDb)]
+  Inventory --> Payments[Payments]
+  Payments --> PaymentsDb[(PaymentsDb)]
+  Payments --> OrdersApi
+  OrdersApi --> Notifications[Notifications]
+  Notifications --> NotificationsDb[(NotificationsDb)]
+  Kafka --> Analytics[Analytics]
 ```
 
 ## Services
 
-| Service | Phase 1 status | Owns | Responsibility |
-| --- | --- | --- | --- |
-| Orders | HTTP + PostgreSQL | OrdersDb | Create/retrieve orders, lifecycle, totals |
-| Catalog | HTTP + PostgreSQL | CatalogDb | Products, categories, prices, availability |
-| Inventory | Host skeleton | InventoryDb in Phase 2 | Reservations and stock |
-| Payments | Host skeleton | PaymentsDb in Phase 2 | Fake payment processing |
-| Notifications | Worker skeleton | none | Simulated email/SMS/push from events |
-| Analytics | Worker skeleton | none | Kafka consumer / projections in Phase 2 |
+| Service | Owns | Responsibility |
+| --- | --- | --- |
+| Orders | OrdersDb | Create orders, confirm/cancel from payment and inventory facts |
+| Catalog | CatalogDb | Products, prices, availability (HTTP; snapshots on order lines) |
+| Inventory | InventoryDb | Stock, reserve, release, oversell protection |
+| Payments | PaymentsDb | Fake provider: complete or decline, one charge per order |
+| Notifications | NotificationsDb | Simulated email/SMS from order/payment events |
+| Analytics | Kafka consumer group | Order/payment/inventory failure projections |
 
-A service never reads another service's database. Orders stores a product name/price **snapshot** on each line. That is intentional: checkout must not depend on a synchronous Catalog call in this design.
+A service never reads another service's database.
 
 ## Event-Driven Workflow
 
-Not running in Phase 1. The integration contracts already live in `FoodFlow.Contracts` so Phase 2 can publish records instead of EF entities.
+Choreography with explicit commands:
+
+1. `POST /api/orders` persists the order and outbox (`OrderCreated` + `ReserveInventory`).
+2. Inventory reserves or publishes `InventoryReservationFailed`.
+3. On success Inventory sends `ProcessPayment`.
+4. Payments publishes `PaymentCompleted` or `PaymentFailed`.
+5. Orders confirms or cancels. Payment failure also sends `ReleaseInventory`.
+6. Notifications consume `OrderConfirmed` / `OrderCancelled`.
+7. Analytics consumes selected facts from Kafka.
 
 ## RabbitMQ
 
-Planned for **operational** messaging: reserve inventory, process payment, confirm/cancel, notify. MassTransit will sit on top of AMQP. Not implemented yet.
+Operational backbone. MassTransit, durable queues, publisher confirms, ack after the consumer transaction, three short retries for transient faults, `{queue}_error` after exhaustion or `PermanentMessagingException`.
 
 ## Kafka
 
-Planned for **analytics streaming**: retain and replay business facts such as order and payment events. Not implemented yet.
+Analytics backbone. Topics `foodflow.orders` and `foodflow.payments`. Keys are order ids. Group `foodflow-analytics`. Retention is configured on the broker. Analytics lag does not block checkout.
 
 ## Why RabbitMQ AND Kafka?
 
-They overlap, so this project does not pretend they are opposites. RabbitMQ is a better default for work queues, competing consumers, and command/event routing with retry/dead-letter. Kafka is a better default when many independent consumers need an ordered, replayable log. Phase 2 will use each for a different job, not the same job twice.
+They overlap, so this project does not pretend they are opposites. RabbitMQ is a better default for work queues, competing consumers, and command/event routing with retry/dead-letter. Kafka is a better default when many independent consumers need an ordered, replayable log. Each is used for a different job, not the same job twice.
 
 ## PostgreSQL / Database-per-Service
 
-Phase 1 runs two PostgreSQL databases: `orders` and `catalog`. That is logical isolation. Production can place those databases on separate instances without changing service code.
-
-See [docs/adr/001-database-per-service.md](docs/adr/001-database-per-service.md) and [docs/adr/002-postgresql.md](docs/adr/002-postgresql.md).
+Orders, Catalog, Inventory, Payments, and Notifications each have a database. See [docs/adr/001-database-per-service.md](docs/adr/001-database-per-service.md).
 
 ## Transactional Outbox
 
-Phase 2. Dual-write (commit to SQL, then publish to a broker) is unsafe. Outbox stores the message in the same local transaction as the business row.
+Each write that must be messaged inserts `outbox_messages` in the same `SaveChanges` as the aggregate. A background publisher then talks to RabbitMQ and, for analytics facts, Kafka.
 
 ## Idempotency
 
-Phase 2. Brokers give at-least-once delivery. Inbox/processed-message rows prevent double reservation and double payment.
+`inbox_messages` plus unique business keys (reservation `OrderId`, payment `OrderId`, stock version) so at-least-once delivery cannot double-reserve or double-charge.
 
 ## Retry & Error Handling
 
-Phase 2. Retry transient failures only. Exhausted messages must land in an inspectable error/dead-letter queue.
+Retry infrastructure blips. Do not retry a declined card or empty stock as if the broker glitched. Poison messages (`44444444-...` product) land in MassTransit `_error`.
 
 ## Saga / Compensation
 
-Phase 2. If inventory is reserved and payment fails, release inventory and cancel the order. No distributed SQL transaction.
+Lightweight choreography. If inventory is reserved and payment fails, `ReleaseInventory` then `OrderCancelled`. No distributed SQL transaction.
 
 ## Docker
 
-Phase 1 Compose starts only the two PostgreSQL instances:
-
 ```bash
-docker compose up -d
+docker compose up --build -d
+docker compose ps
 ```
 
-Application images, RabbitMQ, Kafka, and observability land in later phases.
+Infrastructure: PostgreSQL × 5, RabbitMQ, Kafka (KRaft, no ZooKeeper). Applications are also in Compose.
 
 ## Observability
 
-Phase 1 has structured JSON logs, `X-Correlation-Id`, and liveness/readiness. OpenTelemetry traces, metrics, and Aspire Dashboard are Phase 3.
-
-## OpenTelemetry
-
-Phase 3.
+Structured JSON logs, `X-Correlation-Id`, liveness/readiness. Grafana/Prometheus/OpenTelemetry exporters are Phase 3.
 
 ## Testing
 
-Domain tests cover order totals, invalid orders, cancellation rules, and catalog price/availability invariants:
-
 ```bash
-export DOTNET_ROOT="$HOME/.dotnet"   # if the SDK was installed with the user-local script
+export DOTNET_ROOT="$HOME/.dotnet"
 export PATH="$DOTNET_ROOT:$PATH"
 dotnet test
 ```
 
+Domain tests are in-process. Integration tests use Testcontainers (real PostgreSQL, RabbitMQ, Kafka) and cover happy path, inventory failure, payment compensation, duplicates, transient retry, dead-letter, Kafka analytics, and inventory restart.
+
 ## Running Locally
 
-Requirements: .NET 10 SDK, and either Docker Engine or the user-local PostgreSQL script in `scripts/`.
+Requirements: .NET 10 SDK and Docker.
 
 ```bash
-# 1. Databases
-docker compose up -d
-# or, if Docker is not installed:
-chmod +x scripts/*.sh
-./scripts/start-local-postgres.sh
-
-# 2. Run APIs
-dotnet run --project src/Services/Orders/FoodFlow.Orders.Api
-dotnet run --project src/Services/Catalog/FoodFlow.Catalog.Api
+docker compose up --build -d
 ```
 
-Development applies EF migrations on startup. Connection strings in `appsettings.Development.json` are **local defaults**, not production secrets.
+Development connection strings in `appsettings.Development.json` target mapped Compose ports.
 
 | Service | URL |
 | --- | --- |
 | Orders | http://localhost:5101 |
 | Catalog | http://localhost:5102 |
-| Inventory skeleton | http://localhost:5103 |
-| Payments skeleton | http://localhost:5104 |
+| Inventory | http://localhost:5103 |
+| Payments | http://localhost:5104 |
+| Notifications | http://localhost:5105 |
+| Analytics | http://localhost:5106 |
+| RabbitMQ UI | http://localhost:15672 (foodflow / foodflow) |
 
 ## Example API Calls
 
+Happy path (in-stock product `cccccccc-...`, customer `bbbbbbbb-...`):
+
 ```bash
-curl -s http://localhost:5101/health/live
-curl -s http://localhost:5101/health/ready
-curl -s http://localhost:5102/health/ready
-curl -s http://localhost:5101/openapi/v1.json | head
-
-curl -sS -X POST http://localhost:5102/api/products \
-  -H 'Content-Type: application/json' \
-  -H 'X-Correlation-Id: demo-001' \
-  -d '{"name":"Chicken Kabsa","category":"mains","price":32.50,"currency":"SAR","isAvailable":true}'
-
 curl -sS -X POST http://localhost:5101/api/orders \
   -H 'Content-Type: application/json' \
   -H 'X-Correlation-Id: demo-001' \
@@ -188,19 +160,22 @@ curl -sS -X POST http://localhost:5101/api/orders \
         "restaurantId":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
         "customerId":"bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
         "currency":"SAR",
-        "items":[{"productId":"cccccccc-cccc-cccc-cccc-cccccccccccc","productName":"Chicken Kabsa","quantity":2,"unitPrice":32.50}]
+        "items":[{"productId":"cccccccc-cccc-cccc-cccc-cccccccccccc","productName":"Chicken Kabsa","quantity":1,"unitPrice":32.50}]
       }'
 ```
 
-## Failure Scenarios
+Inventory failure: product `11111111-1111-1111-1111-111111111111`.  
+Payment failure: customer `22222222-2222-2222-2222-222222222222`.
 
-Phase 1 demonstrates HTTP validation and domain rejection (empty order, invalid currency, missing resource). Broker, payment, and stock failures are Phase 2.
+Then poll `GET /api/orders/{id}`, `GET /api/payments/by-order/{id}`, `GET /api/notifications/by-order/{id}`, `GET /api/analytics/snapshot`.
 
 ## Architecture Decisions
 
 - [ADR 001 — Database per service](docs/adr/001-database-per-service.md)
 - [ADR 002 — PostgreSQL](docs/adr/002-postgresql.md)
+- [ADR 003 — RabbitMQ and Kafka](docs/adr/003-rabbitmq-and-kafka.md)
 - [Architecture notes](docs/architecture.md)
+- [Phase 2 interview guide](docs/phase-2-event-driven.md)
 
 ## Production Considerations
 
@@ -208,11 +183,10 @@ This is a demo of production *patterns*, not a production *deployment*. Missing 
 
 ## Trade-offs
 
-Clean Architecture layers exist where they earn their keep (Orders/Catalog). Inventory, Payments, Notifications, and Analytics are honest skeletons rather than empty enterprise folders. There is no MediatR, no generic repository, and no Unit of Work wrapper over `DbContext`.
+No MediatR, no generic repository, no Unit of Work wrapper over `DbContext`. The outbox poller is explicit rather than MassTransit EF outbox so Kafka and RabbitMQ share one table. Analytics state is an in-memory projection fed by Kafka; replay is the source of truth.
 
 ## Future Improvements
 
-Phase 2: messaging, outbox, inbox, saga compensation, Kafka analytics, full Compose.  
 Phase 3: OpenTelemetry, richer tests, GitHub Actions hardening, interview guide.
 
 ## Three-phase roadmap

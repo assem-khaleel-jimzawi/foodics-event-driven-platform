@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>FoodFlow.Integration.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="MassTransit.RabbitMQ" />
+    <PackageReference Include="Testcontainers" />
+    <PackageReference Include="Testcontainers.PostgreSql" />
+    <PackageReference Include="Testcontainers.RabbitMq" />
+    <PackageReference Include="Testcontainers.Kafka" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\BuildingBlocks\FoodFlow.Contracts\FoodFlow.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\Services\Orders\FoodFlow.Orders.Api\FoodFlow.Orders.Api.csproj" />
+    <ProjectReference Include="..\..\src\Services\Inventory\FoodFlow.Inventory.Api\FoodFlow.Inventory.Api.csproj" />
+    <ProjectReference Include="..\..\src\Services\Payments\FoodFlow.Payments.Api\FoodFlow.Payments.Api.csproj" />
+    <ProjectReference Include="..\..\src\Services\Notifications\FoodFlow.Notifications.Worker\FoodFlow.Notifications.Worker.csproj" />
+    <ProjectReference Include="..\..\src\Workers\Analytics\FoodFlow.Analytics.Worker\FoodFlow.Analytics.Worker.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+    <Using Include="FluentAssertions" />
+  </ItemGroup>
+</Project>

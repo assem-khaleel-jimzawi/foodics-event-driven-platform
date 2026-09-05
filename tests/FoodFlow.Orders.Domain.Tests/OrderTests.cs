@@ -76,7 +76,7 @@ public sealed class OrderTests
     }
 
     [Fact]
-    public void Cancel_is_rejected_when_already_cancelled()
+    public void Cancel_is_idempotent_when_already_cancelled()
     {
         var order = Order.Create(
             RestaurantId,
@@ -85,9 +85,9 @@ public sealed class OrderTests
             [(BurgerId, "Burger", 1, 10m)]);
         order.Cancel();
 
-        var act = () => order.Cancel();
+        order.Cancel();
 
-        act.Should().Throw<DomainException>().Where(ex => ex.Code == "order_already_cancelled");
+        order.Status.Should().Be(OrderStatus.Cancelled);
     }
 
     [Fact]

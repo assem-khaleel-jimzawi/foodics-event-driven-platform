@@ -9,7 +9,7 @@ public sealed class CatalogDbContextFactory : IDesignTimeDbContextFactory<Catalo
     {
         var connectionString =
             Environment.GetEnvironmentVariable("ConnectionStrings__CatalogDb")
-            ?? "Host=localhost;Port=5434;Database=catalog;Username=foodflow;Password=foodflow";
+            ?? "Host=localhost;Port=5432;Database=catalog;Username=foodflow;Password=foodflow";
 
         var options = new DbContextOptionsBuilder<CatalogDbContext>()
             .UseNpgsql(connectionString)

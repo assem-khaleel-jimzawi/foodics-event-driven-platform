@@ -2,6 +2,7 @@
   <Folder Name="/src/" />
   <Folder Name="/src/BuildingBlocks/">
     <Project Path="src/BuildingBlocks/FoodFlow.Contracts/FoodFlow.Contracts.csproj" />
+    <Project Path="src/BuildingBlocks/FoodFlow.Messaging/FoodFlow.Messaging.csproj" />
     <Project Path="src/BuildingBlocks/FoodFlow.ServiceDefaults/FoodFlow.ServiceDefaults.csproj" />
   </Folder>
   <Folder Name="/src/Services/" />
@@ -13,6 +14,9 @@
   </Folder>
   <Folder Name="/src/Services/Inventory/">
     <Project Path="src/Services/Inventory/FoodFlow.Inventory.Api/FoodFlow.Inventory.Api.csproj" />
+    <Project Path="src/Services/Inventory/FoodFlow.Inventory.Application/FoodFlow.Inventory.Application.csproj" />
+    <Project Path="src/Services/Inventory/FoodFlow.Inventory.Domain/FoodFlow.Inventory.Domain.csproj" />
+    <Project Path="src/Services/Inventory/FoodFlow.Inventory.Infrastructure/FoodFlow.Inventory.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/src/Services/Notifications/">
     <Project Path="src/Services/Notifications/FoodFlow.Notifications.Worker/FoodFlow.Notifications.Worker.csproj" />
@@ -25,6 +29,9 @@
   </Folder>
   <Folder Name="/src/Services/Payments/">
     <Project Path="src/Services/Payments/FoodFlow.Payments.Api/FoodFlow.Payments.Api.csproj" />
+    <Project Path="src/Services/Payments/FoodFlow.Payments.Application/FoodFlow.Payments.Application.csproj" />
+    <Project Path="src/Services/Payments/FoodFlow.Payments.Domain/FoodFlow.Payments.Domain.csproj" />
+    <Project Path="src/Services/Payments/FoodFlow.Payments.Infrastructure/FoodFlow.Payments.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/src/Workers/" />
   <Folder Name="/src/Workers/Analytics/">
@@ -32,6 +39,8 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/FoodFlow.Catalog.Domain.Tests/FoodFlow.Catalog.Domain.Tests.csproj" />
+    <Project Path="tests/FoodFlow.Inventory.Domain.Tests/FoodFlow.Inventory.Domain.Tests.csproj" />
     <Project Path="tests/FoodFlow.Orders.Domain.Tests/FoodFlow.Orders.Domain.Tests.csproj" />
+    <Project Path="tests/FoodFlow.Integration.Tests/FoodFlow.Integration.Tests.csproj" />
   </Folder>
 </Solution>

@@ -5,8 +5,10 @@
   <ItemGroup>
     <ProjectReference Include="..\FoodFlow.Orders.Application\FoodFlow.Orders.Application.csproj" />
     <ProjectReference Include="..\FoodFlow.Orders.Domain\FoodFlow.Orders.Domain.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\FoodFlow.Messaging\FoodFlow.Messaging.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="MassTransit.RabbitMQ" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <PrivateAssets>all</PrivateAssets>

@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>FoodFlow.Inventory.Domain</RootNamespace>
+  </PropertyGroup>
+</Project>

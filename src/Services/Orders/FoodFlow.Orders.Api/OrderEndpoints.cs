@@ -25,11 +25,14 @@ public static class OrderEndpoints
     private static async Task<IResult> CreateOrder(
         CreateOrderRequest request,
         OrderService orders,
+        HttpContext httpContext,
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
         var logger = loggerFactory.CreateLogger("FoodFlow.Orders.Api");
-        var order = await orders.CreateAsync(request, cancellationToken);
+        var correlationHeader = httpContext.Request.Headers[CorrelationIdMiddleware.HeaderName].FirstOrDefault();
+        var correlationId = Guid.TryParse(correlationHeader, out var parsed) ? parsed : Guid.NewGuid();
+        var order = await orders.CreateAsync(request, correlationId, cancellationToken);
 
         logger.LogInformation(
             "Order {OrderId} created for restaurant {RestaurantId} customer {CustomerId} total {TotalAmount} {Currency}",

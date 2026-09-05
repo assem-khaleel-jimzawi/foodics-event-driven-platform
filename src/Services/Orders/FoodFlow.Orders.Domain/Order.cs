@@ -82,6 +82,11 @@ public sealed class Order
 
     public void Confirm()
     {
+        if (Status == OrderStatus.Confirmed)
+        {
+            return;
+        }
+
         EnsureCreated("order_cannot_be_confirmed", "Only a created order can be confirmed.");
         Status = OrderStatus.Confirmed;
         UpdatedAtUtc = DateTimeOffset.UtcNow;
@@ -91,14 +96,14 @@ public sealed class Order
     {
         if (Status == OrderStatus.Cancelled)
         {
-            throw new DomainException("order_already_cancelled", "Order is already cancelled.");
+            return;
         }
 
         if (Status == OrderStatus.Confirmed)
         {
             throw new DomainException(
                 "order_cannot_be_cancelled",
-                "Confirmed orders cannot be cancelled from this operation. Compensation will be handled in Phase 2.");
+                "Confirmed orders are not cancelled by this compensation path.");
         }
 
         Status = OrderStatus.Cancelled;

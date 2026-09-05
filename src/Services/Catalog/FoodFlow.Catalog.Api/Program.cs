@@ -12,11 +12,13 @@ builder.AddCatalogInfrastructure();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Configuration.GetValue("Database:MigrateOnStartup", false))
 {
-    await using var scope = app.Services.CreateAsyncScope();
-    var db = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
-    await db.Database.MigrateAsync();
+    await FoodFlowServiceDefaults.RetryStartupAsync(async () =>
+    {
+        await using var scope = app.Services.CreateAsyncScope();
+        await scope.ServiceProvider.GetRequiredService<CatalogDbContext>().Database.MigrateAsync();
+    });
 }
 
 app.MapFoodFlowServiceDefaults();

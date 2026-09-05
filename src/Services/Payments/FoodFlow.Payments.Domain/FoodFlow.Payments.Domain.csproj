@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>FoodFlow.Payments.Domain</RootNamespace>
+  </PropertyGroup>
+</Project>

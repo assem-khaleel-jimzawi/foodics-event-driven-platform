@@ -4,5 +4,15 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\FoodFlow.ServiceDefaults\FoodFlow.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\FoodFlow.Messaging\FoodFlow.Messaging.csproj" />
+    <ProjectReference Include="..\FoodFlow.Inventory.Application\FoodFlow.Inventory.Application.csproj" />
+    <ProjectReference Include="..\FoodFlow.Inventory.Infrastructure\FoodFlow.Inventory.Infrastructure.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MassTransit.RabbitMQ" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 </Project>

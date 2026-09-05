@@ -10,7 +10,7 @@ FoodFlow is split into independently deployable services. The first two to persi
 
 ## Decision
 
-Each service that owns data gets its own PostgreSQL database. Phase 1 creates `OrdersDb` and `CatalogDb`. Later services will own `InventoryDb` and `PaymentsDb`. No service may query another service's schema.
+Each service that owns data gets its own PostgreSQL database. Orders, Catalog, Inventory, Payments, and Notifications each have a database. No service may query another service's schema.
 
 Locally, that can be two databases in two containers (Compose) or two databases on two ports (the no-Docker script). Production can place them on separate instances without changing application code.
 

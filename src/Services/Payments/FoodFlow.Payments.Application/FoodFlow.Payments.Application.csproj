@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>FoodFlow.Payments.Application</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FoodFlow.Payments.Domain\FoodFlow.Payments.Domain.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\FoodFlow.Contracts\FoodFlow.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\FoodFlow.Messaging\FoodFlow.Messaging.csproj" />
+  </ItemGroup>
+</Project>

@@ -4,11 +4,13 @@ namespace FoodFlow.Contracts.Payments;
 public sealed record ProcessPayment(
     Guid EventId,
     Guid OrderId,
+    Guid CustomerId,
     decimal Amount,
     string Currency,
     DateTimeOffset OccurredAtUtc,
     Guid CorrelationId);
 
+/// <summary>Event: money was collected (fake provider, no real PSP).</summary>
 public sealed record PaymentCompleted(
     Guid EventId,
     Guid OrderId,
@@ -18,6 +20,7 @@ public sealed record PaymentCompleted(
     DateTimeOffset OccurredAtUtc,
     Guid CorrelationId);
 
+/// <summary>Event: collection failed. Triggers compensation, not a retry of the business decision.</summary>
 public sealed record PaymentFailed(
     Guid EventId,
     Guid OrderId,

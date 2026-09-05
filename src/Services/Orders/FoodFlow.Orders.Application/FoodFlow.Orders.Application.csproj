@@ -4,5 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\FoodFlow.Orders.Domain\FoodFlow.Orders.Domain.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\FoodFlow.Contracts\FoodFlow.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\FoodFlow.Messaging\FoodFlow.Messaging.csproj" />
   </ItemGroup>
 </Project>

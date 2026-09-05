@@ -61,6 +61,22 @@ public static class FoodFlowServiceDefaults
         return builder;
     }
 
+    public static async Task RetryStartupAsync(Func<Task> action, int attempts = 10)
+    {
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                await action();
+                return;
+            }
+            catch when (attempt < attempts)
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(250 * attempt));
+            }
+        }
+    }
+
     public static WebApplication MapFoodFlowServiceDefaults(this WebApplication app)
     {
         var info = app.Services.GetRequiredService<FoodFlowServiceInfo>();
