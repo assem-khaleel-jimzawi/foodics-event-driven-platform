@@ -10,7 +10,7 @@ Finance and operations will want to replay "what happened" without re-driving In
 
 ## Decision
 
-Publish a **copy** of selected business events to Kafka topics `foodflow.orders` and `foodflow.payments` through the same outbox that publishes to RabbitMQ. A single analytics consumer group materializes rows in AnalyticsDb.
+Publish a **copy** of selected business events to Kafka topics `foodflow.orders` and `foodflow.payments` through the same outbox that publishes to RabbitMQ. A single analytics consumer group (`foodflow-analytics`) projects those facts. The Compose demo keeps the projection in memory; Kafka offsets are the durable cursor.
 
 Kafka is not used to reserve stock, charge cards, or cancel orders.
 

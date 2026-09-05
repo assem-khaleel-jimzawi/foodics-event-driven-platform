@@ -67,7 +67,7 @@ Choreography with explicit commands:
 
 1. `POST /api/orders` persists the order and outbox (`OrderCreated` + `ReserveInventory`).
 2. Inventory reserves or publishes `InventoryReservationFailed`.
-3. On success Inventory sends `ProcessPayment`.
+3. On success Inventory publishes `InventoryReserved`. Payments consumes that event and charges.
 4. Payments publishes `PaymentCompleted` or `PaymentFailed`.
 5. Orders confirms or cancels. Payment failure also sends `ReleaseInventory`.
 6. Notifications consume `OrderConfirmed` / `OrderCancelled`.

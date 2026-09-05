@@ -41,7 +41,8 @@ Orders does not call Catalog. Line items carry a product snapshot.
 | Path | Transport |
 | --- | --- |
 | Client -> Orders/Catalog/Inventory/Payments | HTTP |
-| ReserveInventory / ReleaseInventory / ProcessPayment | RabbitMQ commands |
+| ReserveInventory / ReleaseInventory | RabbitMQ commands |
+| InventoryReserved (Payments reacts) | RabbitMQ event used as the next-step trigger |
 | Inventory/payment/order facts the workflow reacts to | RabbitMQ events |
 | Order/payment/inventory facts for analytics | Kafka topics `foodflow.orders`, `foodflow.payments` |
 

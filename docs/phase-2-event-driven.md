@@ -67,7 +67,7 @@ sequenceDiagram
   O-->>I: ReserveInventory command
   O-->>A: OrderCreated (Kafka)
   I->>I: Reserve stock
-  I-->>P: ProcessPayment command
+  I-->>P: InventoryReserved event
   I-->>A: InventoryReserved (Kafka)
   P->>P: Fake charge
   P-->>O: PaymentCompleted
@@ -91,7 +91,7 @@ sequenceDiagram
   participant I as Inventory
   participant P as Payments
   O-->>I: ReserveInventory
-  I-->>P: ProcessPayment
+  I-->>P: InventoryReserved
   P-->>O: PaymentFailed
   O->>O: Cancel
   O-->>I: ReleaseInventory
@@ -125,7 +125,7 @@ MassTransit retries transient exceptions three times with short backoff. `Perman
 Demo:
 
 - Product `33333333-...` throws `TransientMessagingException` twice, then succeeds.
-- Product `44444444-...` throws `PermanentMessagingException` immediately.
+- Product `44444444-...` throws `PermanentMessagingException` immediately. MassTransit moves it to `reserve-inventory_error`. Inventory does **not** publish `InventoryReservationFailed`, so the order stays `Created` until an operator inspects the error queue. That is poison vs a business decline.
 
 Business declines (insufficient stock, fake card decline) are **events**, not exceptions. They must not bounce around a retry loop.
 
@@ -135,7 +135,7 @@ This workflow is **choreography**: each service reacts to messages. There is no 
 
 A **saga** here means a long-running business transaction with a compensation path, not a distributed SQL transaction.
 
-**Orchestration** would put a central coordinator (Orders or a saga service) that sends every command. **Choreography** lets Inventory emit `ProcessPayment` after a successful reserve. FoodFlow is choreography with explicit commands between steps.
+**Orchestration** would put a central coordinator (Orders or a saga service) that sends every command. **Choreography** lets Inventory publish `InventoryReserved` and Payments react. `ProcessPayment` exists as a command contract for the interview vocabulary; it is not also consumed, because a second charge path on the same `OrderId` would be a double-write footgun. The unique payment index is the backstop, not the design.
 
 **Eventual consistency**: a GET between `InventoryReserved` and `OrderConfirmed` can show `Created`. That is expected. Clients poll or subscribe; they do not expect a single ACID commit across services.
 
