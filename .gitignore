@@ -8,6 +8,9 @@
 .env.*
 !.env.example
 
+# Certificates / private keys (never commit real ones)
+*.pem
+
 # Local PostgreSQL data if created inside the repo
 .pgdata/
 

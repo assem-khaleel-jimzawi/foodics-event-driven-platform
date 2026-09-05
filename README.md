@@ -26,7 +26,9 @@ Phase 2 added RabbitMQ, MassTransit, Kafka, transactional outbox, inbox idempote
 
 Phase 3 adds OpenTelemetry traces/metrics, Prometheus, Grafana, Tempo, correlation in logs, CI (`dotnet test` + Compose config), and the interview guide.
 
-Walkthroughs: [docs/phase-2-event-driven.md](docs/phase-2-event-driven.md), [docs/phase-3-production-readiness.md](docs/phase-3-production-readiness.md), [docs/interview-guide.md](docs/interview-guide.md).
+Start here for a live demo: [docs/runbook.md](docs/runbook.md), [docs/interview-demo.md](docs/interview-demo.md), [docs/system-walkthrough.md](docs/system-walkthrough.md).
+
+Deeper notes: [docs/phase-2-event-driven.md](docs/phase-2-event-driven.md), [docs/phase-3-production-readiness.md](docs/phase-3-production-readiness.md), [docs/interview-guide.md](docs/interview-guide.md), [docs/security.md](docs/security.md).
 
 ## Architecture
 
@@ -182,6 +184,10 @@ Then poll `GET /api/orders/{id}`, `GET /api/payments/by-order/{id}`, `GET /api/n
 - [Phase 2 interview note](docs/phase-2-event-driven.md)
 - [Phase 3 production readiness](docs/phase-3-production-readiness.md)
 - [Interview Q&A](docs/interview-guide.md)
+- [Runbook](docs/runbook.md)
+- [System walkthrough](docs/system-walkthrough.md)
+- [Interview demo script](docs/interview-demo.md)
+- [Security (demo vs production)](docs/security.md)
 
 ## Production Considerations
 
@@ -200,3 +206,4 @@ Production would add auth, secret management, broker HA, backups, and a real APM
 1. **Phase 1** — foundation, Orders/Catalog, PostgreSQL, tests, docs.
 2. **Phase 2** — event-driven order processing with RabbitMQ + Kafka.
 3. **Phase 3** — observability, quality, and delivery automation.
+4. **Final audit** — security review, clean Compose E2E, runbook, and interview demo (this does not add a new architecture phase).
