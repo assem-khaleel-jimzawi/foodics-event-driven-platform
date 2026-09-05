@@ -1,0 +1,37 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/BuildingBlocks/">
+    <Project Path="src/BuildingBlocks/FoodFlow.Contracts/FoodFlow.Contracts.csproj" />
+    <Project Path="src/BuildingBlocks/FoodFlow.ServiceDefaults/FoodFlow.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/" />
+  <Folder Name="/src/Services/Catalog/">
+    <Project Path="src/Services/Catalog/FoodFlow.Catalog.Api/FoodFlow.Catalog.Api.csproj" />
+    <Project Path="src/Services/Catalog/FoodFlow.Catalog.Application/FoodFlow.Catalog.Application.csproj" />
+    <Project Path="src/Services/Catalog/FoodFlow.Catalog.Domain/FoodFlow.Catalog.Domain.csproj" />
+    <Project Path="src/Services/Catalog/FoodFlow.Catalog.Infrastructure/FoodFlow.Catalog.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Inventory/">
+    <Project Path="src/Services/Inventory/FoodFlow.Inventory.Api/FoodFlow.Inventory.Api.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Notifications/">
+    <Project Path="src/Services/Notifications/FoodFlow.Notifications.Worker/FoodFlow.Notifications.Worker.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Orders/">
+    <Project Path="src/Services/Orders/FoodFlow.Orders.Api/FoodFlow.Orders.Api.csproj" />
+    <Project Path="src/Services/Orders/FoodFlow.Orders.Application/FoodFlow.Orders.Application.csproj" />
+    <Project Path="src/Services/Orders/FoodFlow.Orders.Domain/FoodFlow.Orders.Domain.csproj" />
+    <Project Path="src/Services/Orders/FoodFlow.Orders.Infrastructure/FoodFlow.Orders.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Payments/">
+    <Project Path="src/Services/Payments/FoodFlow.Payments.Api/FoodFlow.Payments.Api.csproj" />
+  </Folder>
+  <Folder Name="/src/Workers/" />
+  <Folder Name="/src/Workers/Analytics/">
+    <Project Path="src/Workers/Analytics/FoodFlow.Analytics.Worker/FoodFlow.Analytics.Worker.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/FoodFlow.Catalog.Domain.Tests/FoodFlow.Catalog.Domain.Tests.csproj" />
+    <Project Path="tests/FoodFlow.Orders.Domain.Tests/FoodFlow.Orders.Domain.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,8 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>FoodFlow.Catalog.Application</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FoodFlow.Catalog.Domain\FoodFlow.Catalog.Domain.csproj" />
+  </ItemGroup>
+</Project>

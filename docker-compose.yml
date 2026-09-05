@@ -1,0 +1,51 @@
+name: foodflow
+
+services:
+  orders-db:
+    image: postgres:16.15-alpine
+    container_name: foodflow-orders-db
+    environment:
+      POSTGRES_USER: foodflow
+      POSTGRES_PASSWORD: foodflow
+      POSTGRES_DB: orders
+    ports:
+      - "5433:5432"
+    volumes:
+      - orders-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U foodflow -d orders"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - foodflow
+    restart: unless-stopped
+
+  catalog-db:
+    image: postgres:16.15-alpine
+    container_name: foodflow-catalog-db
+    environment:
+      POSTGRES_USER: foodflow
+      POSTGRES_PASSWORD: foodflow
+      POSTGRES_DB: catalog
+    ports:
+      - "5434:5432"
+    volumes:
+      - catalog-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U foodflow -d catalog"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - foodflow
+    restart: unless-stopped
+
+volumes:
+  orders-db-data:
+  catalog-db-data:
+
+networks:
+  foodflow:
+    name: foodflow
+    driver: bridge

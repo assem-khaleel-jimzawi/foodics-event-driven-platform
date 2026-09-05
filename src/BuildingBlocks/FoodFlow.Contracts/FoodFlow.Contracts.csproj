@@ -1,0 +1,6 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>FoodFlow.Contracts</RootNamespace>
+    <Description>Immutable integration contracts shared across FoodFlow services. These are external message contracts, not domain entities.</Description>
+  </PropertyGroup>
+</Project>

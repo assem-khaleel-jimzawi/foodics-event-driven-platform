@@ -1,0 +1,6 @@
+@FoodFlow.Orders.Api_HostAddress = http://localhost:5069
+
+GET {{FoodFlow.Orders.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

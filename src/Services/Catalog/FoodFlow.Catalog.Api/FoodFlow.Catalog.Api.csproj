@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <RootNamespace>FoodFlow.Catalog.Api</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\FoodFlow.ServiceDefaults\FoodFlow.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\FoodFlow.Catalog.Application\FoodFlow.Catalog.Application.csproj" />
+    <ProjectReference Include="..\FoodFlow.Catalog.Infrastructure\FoodFlow.Catalog.Infrastructure.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>

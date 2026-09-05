@@ -1,0 +1,17 @@
+**/.git
+**/.gitignore
+**/.vs
+**/.idea
+**/.vscode
+**/bin
+**/obj
+**/TestResults
+**/.env
+**/*.user
+**/appsettings.*.local.json
+**/.pgdata
+**/node_modules
+README.md
+docs
+tests
+.git
