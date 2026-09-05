@@ -25,7 +25,16 @@ Keys are `OrderId`. Records for one order therefore land on the same partition a
 | Retention | Broker config `KAFKA_CFG_LOG_RETENTION_HOURS=168` in Compose |
 | Replay | Stop the worker, change nothing, start it: the group continues from the committed offset. To replay, use a new group id or reset offsets. |
 | Ordering | Per `OrderId` / partition, not cluster-wide |
-| Consumer lag | `latest offset - committed offset` on a partition. Inspect with Kafka tooling; Phase 3 will add metrics. |
+| Consumer lag | `latest offset - committed offset` on a partition. `kafka-consumer-groups.sh --describe` inside the Kafka container. |
+
+## Incident checks
+
+```bash
+sg docker -c 'docker exec foodflow-kafka kafka-topics.sh --bootstrap-server 127.0.0.1:9092 --list'
+sg docker -c 'docker exec foodflow-kafka kafka-consumer-groups.sh --bootstrap-server 127.0.0.1:9092 --group foodflow-analytics --describe'
+```
+
+Kafka records include `message-type` and `traceparent` headers so Analytics can continue the checkout trace.
 
 ## Produce path
 

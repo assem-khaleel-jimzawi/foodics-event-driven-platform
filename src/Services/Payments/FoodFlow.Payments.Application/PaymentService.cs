@@ -94,5 +94,13 @@ public sealed class PaymentService(IPaymentStore store, IPaymentGateway gateway)
         }
 
         await store.SaveChangesAsync(cancellationToken);
+        if (decision.Succeeded)
+        {
+            FoodFlow.Messaging.FoodFlowTelemetry.PaymentsCompleted.Add(1);
+        }
+        else
+        {
+            FoodFlow.Messaging.FoodFlowTelemetry.PaymentsFailed.Add(1);
+        }
     }
 }

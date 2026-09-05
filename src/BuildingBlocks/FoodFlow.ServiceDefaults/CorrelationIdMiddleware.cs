@@ -1,9 +1,12 @@
+using System.Diagnostics;
+using Microsoft.AspNetCore.Http;
+
 namespace FoodFlow.ServiceDefaults;
 
 /// <summary>
-/// Copies or assigns X-Correlation-Id so logs across a single client request can be joined
-/// even before OpenTelemetry is wired in Phase 3. CorrelationId is a business/request id;
-/// TraceId is a telemetry id. They often travel together but are not the same thing.
+/// Copies or assigns X-Correlation-Id so logs across a single client request can be joined.
+/// CorrelationId is a business/request id. TraceId/SpanId are W3C telemetry identifiers.
+/// They often travel together but are not the same thing.
 /// </summary>
 public sealed class CorrelationIdMiddleware(RequestDelegate next)
 {
@@ -20,10 +23,14 @@ public sealed class CorrelationIdMiddleware(RequestDelegate next)
         context.Items[HeaderName] = correlationId;
         context.Response.Headers[HeaderName] = correlationId;
 
+        var activity = Activity.Current;
+        activity?.SetTag("correlation.id", correlationId);
         using (logger.BeginScope(new Dictionary<string, object>
         {
             ["CorrelationId"] = correlationId,
-            ["ServiceName"] = context.RequestServices.GetService<FoodFlowServiceInfo>()?.ServiceName ?? "unknown"
+            ["ServiceName"] = context.RequestServices.GetService<FoodFlowServiceInfo>()?.ServiceName ?? "unknown",
+            ["TraceId"] = activity?.TraceId.ToString() ?? string.Empty,
+            ["SpanId"] = activity?.SpanId.ToString() ?? string.Empty
         }))
         {
             await next(context);

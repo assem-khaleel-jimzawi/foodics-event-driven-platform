@@ -18,15 +18,15 @@ FoodFlow therefore uses:
 
 ## Current Delivery Phase
 
-**Phase 2 — Event-driven order processing** is implemented.
+**Phase 3 — Production readiness and observability** is implemented.
 
 Phase 1 established service boundaries, Orders/Catalog HTTP and persistence, PostgreSQL, health, OpenAPI, and domain tests.
 
-Phase 2 adds RabbitMQ, MassTransit, Kafka, transactional outbox, inbox idempotency, retries, dead-letter, choreographed compensation, Notifications, Analytics, Docker Compose for the brokers, and integration tests.
+Phase 2 added RabbitMQ, MassTransit, Kafka, transactional outbox, inbox idempotency, retries, dead-letter, choreographed compensation, Notifications, Analytics, Docker Compose for the brokers, and integration tests.
 
-Phase 3 (OpenTelemetry dashboards) is **not** started.
+Phase 3 adds OpenTelemetry traces/metrics, Prometheus, Grafana, Tempo, correlation in logs, CI (`dotnet test` + Compose config), and the interview guide.
 
-The interview walkthrough is [docs/phase-2-event-driven.md](docs/phase-2-event-driven.md).
+Walkthroughs: [docs/phase-2-event-driven.md](docs/phase-2-event-driven.md), [docs/phase-3-production-readiness.md](docs/phase-3-production-readiness.md), [docs/interview-guide.md](docs/interview-guide.md).
 
 ## Architecture
 
@@ -112,11 +112,11 @@ docker compose up --build -d
 docker compose ps
 ```
 
-Infrastructure: PostgreSQL × 5, RabbitMQ, Kafka (KRaft, no ZooKeeper). Applications are also in Compose.
+Infrastructure: PostgreSQL × 5, RabbitMQ, Kafka (KRaft, no ZooKeeper), Prometheus, Tempo, Grafana. Applications are also in Compose.
 
 ## Observability
 
-Structured JSON logs, `X-Correlation-Id`, liveness/readiness. Grafana/Prometheus/OpenTelemetry exporters are Phase 3.
+OpenTelemetry (ASP.NET, HttpClient, Npgsql, MassTransit, custom `FoodFlow` source/meter). Traces go to Tempo when `OpenTelemetry__OtlpEndpoint` is set. Metrics are scraped from `/metrics` by Prometheus. Grafana dashboard **FoodFlow overview**. JSON logs include `CorrelationId`, `TraceId`, and `SpanId`. See [docs/phase-3-production-readiness.md](docs/phase-3-production-readiness.md).
 
 ## Testing
 
@@ -147,6 +147,9 @@ Development connection strings in `appsettings.Development.json` target mapped C
 | Notifications | http://localhost:5105 |
 | Analytics | http://localhost:5106 |
 | RabbitMQ UI | http://localhost:15672 (foodflow / foodflow) |
+| Prometheus | http://localhost:9090 |
+| Grafana | http://localhost:3000 (foodflow / foodflow) |
+| Tempo | http://localhost:3200 |
 
 ## Example API Calls
 
@@ -174,8 +177,11 @@ Then poll `GET /api/orders/{id}`, `GET /api/payments/by-order/{id}`, `GET /api/n
 - [ADR 001 — Database per service](docs/adr/001-database-per-service.md)
 - [ADR 002 — PostgreSQL](docs/adr/002-postgresql.md)
 - [ADR 003 — RabbitMQ and Kafka](docs/adr/003-rabbitmq-and-kafka.md)
+- [ADR 007 — OpenTelemetry](docs/adr/007-opentelemetry.md)
 - [Architecture notes](docs/architecture.md)
-- [Phase 2 interview guide](docs/phase-2-event-driven.md)
+- [Phase 2 interview note](docs/phase-2-event-driven.md)
+- [Phase 3 production readiness](docs/phase-3-production-readiness.md)
+- [Interview Q&A](docs/interview-guide.md)
 
 ## Production Considerations
 
@@ -187,7 +193,7 @@ No MediatR, no generic repository, no Unit of Work wrapper over `DbContext`. The
 
 ## Future Improvements
 
-Phase 3: OpenTelemetry, richer tests, GitHub Actions hardening, interview guide.
+Production would add auth, secret management, broker HA, backups, and a real APM backend. This repo stops at a demonstrable local platform. Do not add Kubernetes, Redis, or Elasticsearch unless a later assignment requires them.
 
 ## Three-phase roadmap
 

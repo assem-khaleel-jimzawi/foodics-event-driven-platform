@@ -4,7 +4,7 @@ using FoodFlow.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddFoodFlowServiceDefaults("foodflow-analytics", deliveryPhase: 2);
+builder.AddFoodFlowServiceDefaults("foodflow-analytics", deliveryPhase: 3);
 builder.AddFoodFlowFallbackExceptionHandler();
 builder.Services.Configure<KafkaOptions>(builder.Configuration.GetSection(KafkaOptions.SectionName));
 builder.Services.AddHostedService<KafkaTopicProvisioner>();

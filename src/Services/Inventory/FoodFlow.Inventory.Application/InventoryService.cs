@@ -101,6 +101,7 @@ public sealed class InventoryService(IInventoryStore store)
 
             store.Enqueue(reserved, now);
             await store.SaveChangesAsync(cancellationToken);
+            FoodFlowTelemetry.InventoryReservations.Add(1);
         }
         catch (DomainException exception)
         {
@@ -108,6 +109,7 @@ public sealed class InventoryService(IInventoryStore store)
                 new InventoryReservationFailed(Guid.NewGuid(), message.OrderId, exception.Message, now, message.CorrelationId),
                 now);
             await store.SaveChangesAsync(cancellationToken);
+            FoodFlowTelemetry.InventoryReservationFailures.Add(1);
         }
     }
 

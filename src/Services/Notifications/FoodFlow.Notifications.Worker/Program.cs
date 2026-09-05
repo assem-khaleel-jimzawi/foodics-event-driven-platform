@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddFoodFlowServiceDefaults("foodflow-notifications", deliveryPhase: 2);
+builder.AddFoodFlowServiceDefaults("foodflow-notifications", deliveryPhase: 3);
 builder.AddFoodFlowFallbackExceptionHandler();
 
 var connectionString = builder.Configuration.GetConnectionString("NotificationsDb")

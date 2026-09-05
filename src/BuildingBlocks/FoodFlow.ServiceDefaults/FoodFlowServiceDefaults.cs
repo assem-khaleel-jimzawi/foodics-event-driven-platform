@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using OpenTelemetry.Metrics;
 
 namespace FoodFlow.ServiceDefaults;
 
@@ -51,6 +52,8 @@ public static class FoodFlowServiceDefaults
 
         builder.Services.AddHealthChecks()
             .AddCheck("self", () => HealthCheckResult.Healthy(), tags: ["live"]);
+
+        builder.AddFoodFlowOpenTelemetry(serviceName);
 
         return builder;
     }
@@ -103,6 +106,8 @@ public static class FoodFlowServiceDefaults
             Predicate = check => check.Tags.Contains("ready") || check.Tags.Contains("live"),
             ResponseWriter = WriteHealthResponse
         });
+
+        app.MapPrometheusScrapingEndpoint("/metrics");
 
         app.MapGet("/", () => Results.Ok(new
         {

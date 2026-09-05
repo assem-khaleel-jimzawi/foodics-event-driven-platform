@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,6 +30,7 @@ public sealed class OutboxProcessor<TContext>(
             catch (Exception exception)
             {
                 logger.LogError(exception, "Outbox processor loop failed");
+                FoodFlowTelemetry.ConsumerFailures.Add(1, new KeyValuePair<string, object?>("component", "outbox"));
             }
 
             try
@@ -63,6 +65,14 @@ public sealed class OutboxProcessor<TContext>(
 
         foreach (var message in batch)
         {
+            var started = Stopwatch.GetTimestamp();
+            using var activity = FoodFlowTelemetry.StartFromParent(
+                "outbox.publish",
+                ActivityKind.Producer,
+                message.TraceParent);
+            activity?.SetTag("messaging.system", message.Destination);
+            activity?.SetTag("messaging.destination", message.Topic ?? message.MessageType);
+
             try
             {
                 var type = ContractTypes.Resolve(message.MessageType);
@@ -95,13 +105,20 @@ public sealed class OutboxProcessor<TContext>(
                 message.AttemptCount++;
                 message.LastError = exception.Message;
                 message.PublishedAtUtc = DateTimeOffset.UtcNow;
+                activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
                 logger.LogError(exception, "Outbox message {OutboxId} is permanently failed and parked", message.Id);
             }
             catch (Exception exception)
             {
                 message.AttemptCount++;
                 message.LastError = exception.Message;
+                activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
                 logger.LogWarning(exception, "Outbox publish attempt {Attempt} failed for {OutboxId}", message.AttemptCount, message.Id);
+            }
+            finally
+            {
+                var elapsedMs = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+                FoodFlowTelemetry.EventProcessingDuration.Record(elapsedMs, new KeyValuePair<string, object?>("component", "outbox"));
             }
         }
 

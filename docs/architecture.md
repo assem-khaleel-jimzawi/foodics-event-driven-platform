@@ -17,7 +17,7 @@ Shared code is intentionally small:
 
 - `FoodFlow.Contracts` — immutable integration records (commands vs events)
 - `FoodFlow.Messaging` — MassTransit registration, outbox, inbox, Kafka producer
-- `FoodFlow.ServiceDefaults` — logging, health, OpenAPI, correlation id
+- `FoodFlow.ServiceDefaults` — logging, health, OpenAPI, correlation id, OpenTelemetry, `/metrics`
 
 Services do **not** share entities, DbContexts, or business rules.
 
@@ -60,6 +60,10 @@ RabbitMQ and Kafka are not given the same job. See [ADR 003](adr/003-rabbitmq-an
 
 - `/health/live` — process is up. It does not depend on PostgreSQL.
 - `/health/ready` — this instance can take traffic. Database-backed services include an EF Core check.
+
+## Observability (Phase 3)
+
+Traces (OTLP → Tempo), metrics (`/metrics` → Prometheus → Grafana), JSON logs with correlation and W3C ids. See [phase-3-production-readiness.md](phase-3-production-readiness.md) and [ADR 007](adr/007-opentelemetry.md).
 
 ## Money and identity
 

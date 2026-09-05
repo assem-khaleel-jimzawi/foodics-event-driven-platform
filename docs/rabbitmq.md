@@ -12,11 +12,11 @@ Each service has competing consumers on its own queues. Prefetch is 16. There is
 
 ## Retry
 
-`UseMessageRetry` retries **only** `TransientMessagingException` (three attempts, 400 ms apart). `PermanentMessagingException` is ignored by the retry filter and faults immediately.
+`UseMessageRetry` runs three short intervals (200/400/800 ms) for exceptions **except** `PermanentMessagingException`, which is ignored by the retry filter and faults immediately.
 
 After retries are exhausted, MassTransit moves the message to the `_error` queue for that endpoint (`reserve-inventory_error`). That queue is inspectable in the RabbitMQ management UI on port 15672.
 
-Permanent business decisions (insufficient stock, fake card decline) are **not** retried. They are published as failure events and the workflow compensates.
+Permanent **business** decisions (insufficient stock, fake card decline) are **not** thrown as consumer faults. They are published as failure events and the workflow compensates. Poison payloads (`PermanentMessagingException`) go to `_error`.
 
 ## Why not Kafka for this path
 

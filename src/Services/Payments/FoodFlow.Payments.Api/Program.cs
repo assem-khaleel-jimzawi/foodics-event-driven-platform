@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddFoodFlowServiceDefaults("foodflow-payments", deliveryPhase: 2);
+builder.AddFoodFlowServiceDefaults("foodflow-payments", deliveryPhase: 3);
 builder.AddFoodFlowFallbackExceptionHandler();
 builder.AddPaymentsInfrastructure();
 builder.AddFoodFlowRabbitMq(bus => bus.AddConsumer<InventoryReservedConsumer>());

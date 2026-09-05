@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddFoodFlowServiceDefaults("foodflow-orders", deliveryPhase: 2);
+builder.AddFoodFlowServiceDefaults("foodflow-orders", deliveryPhase: 3);
 builder.Services.AddExceptionHandler<OrdersExceptionHandler>();
 builder.AddFoodFlowFallbackExceptionHandler();
 builder.AddOrdersInfrastructure();

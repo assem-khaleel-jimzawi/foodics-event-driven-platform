@@ -14,6 +14,7 @@ public static class MessagingModelBuilderExtensions
             builder.Property(message => message.Payload).HasColumnType("jsonb").IsRequired();
             builder.Property(message => message.Destination).HasMaxLength(32).IsRequired();
             builder.Property(message => message.Topic).HasMaxLength(128);
+            builder.Property(message => message.TraceParent).HasMaxLength(128);
             builder.Property(message => message.LastError).HasMaxLength(2000);
             builder.HasIndex(message => message.PublishedAtUtc);
             builder.HasIndex(message => message.OccurredAtUtc);

@@ -1,0 +1,146 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 0 },
+      "id": 1,
+      "title": "HTTP request rate",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum by (service) (rate(http_server_request_duration_seconds_count[1m]))",
+          "legendFormat": "{{service}}"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 0 },
+      "id": 2,
+      "title": "HTTP 5xx rate",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum by (service) (rate(http_server_request_duration_seconds_count{http_response_status_code=~\"5..\"}[1m]))",
+          "legendFormat": "{{service}}"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 0 },
+      "id": 3,
+      "title": "HTTP latency p95",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (service, le) (rate(http_server_request_duration_seconds_bucket[5m])))",
+          "legendFormat": "{{service}}"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "ops" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 8 },
+      "id": 4,
+      "title": "Orders",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum(rate(orders_created_total[1m]))",
+          "legendFormat": "created"
+        },
+        {
+          "expr": "sum(rate(orders_confirmed_total[1m]))",
+          "legendFormat": "confirmed"
+        },
+        {
+          "expr": "sum(rate(orders_cancelled_total[1m]))",
+          "legendFormat": "cancelled"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 8 },
+      "id": 5,
+      "title": "Inventory + payment failures",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum(rate(inventory_reservation_failures_total[1m]))",
+          "legendFormat": "inventory failures"
+        },
+        {
+          "expr": "sum(rate(payments_failed_total[1m]))",
+          "legendFormat": "payment failures"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "ops" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 8 },
+      "id": 6,
+      "title": "Message processing",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum by (component) (rate(event_processing_duration_milliseconds_count[1m]))",
+          "legendFormat": "{{component}}"
+        },
+        {
+          "expr": "sum(rate(consumer_failures_total[1m]))",
+          "legendFormat": "consumer failures"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "id": 7,
+      "title": "Business counters (total)",
+      "type": "stat",
+      "targets": [
+        { "expr": "sum(orders_created_total)", "legendFormat": "orders created" },
+        { "expr": "sum(orders_confirmed_total)", "legendFormat": "orders confirmed" },
+        { "expr": "sum(inventory_reservations_total)", "legendFormat": "reservations" },
+        { "expr": "sum(payments_completed_total)", "legendFormat": "payments" },
+        { "expr": "sum(notifications_sent_total)", "legendFormat": "notifications" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "percentunit" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "id": 8,
+      "title": "Process CPU",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum by (service) (rate(dotnet_process_cpu_time_seconds_total[1m]))",
+          "legendFormat": "{{service}}"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["foodflow"],
+  "templating": { "list": [] },
+  "time": { "from": "now-15m", "to": "now" },
+  "title": "FoodFlow overview",
+  "uid": "foodflow-overview",
+  "version": 1
+}

@@ -48,9 +48,17 @@ public static class MessagingServiceCollectionExtensions
                         TimeSpan.FromMilliseconds(400),
                         TimeSpan.FromMilliseconds(800));
                 });
+                cfg.UseConsumeFilter(typeof(TelemetryConsumeFilter<>), context);
 
                 cfg.ConfigureEndpoints(context);
             });
+        });
+
+        builder.Services.Configure<MassTransitHostOptions>(options =>
+        {
+            options.WaitUntilStarted = true;
+            options.StartTimeout = TimeSpan.FromSeconds(30);
+            options.StopTimeout = TimeSpan.FromSeconds(30);
         });
 
         return builder;

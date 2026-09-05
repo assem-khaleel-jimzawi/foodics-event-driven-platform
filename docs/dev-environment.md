@@ -28,4 +28,4 @@ If Phase 1's optional local PostgreSQL helper is still bound to 5433/5434, stop 
 
 Development credentials are `foodflow` / `foodflow`. They are not production secrets.
 
-Mapped ports: OrdersDb 5433, CatalogDb 5434, InventoryDb 5435, PaymentsDb 5436, NotificationsDb 5437, RabbitMQ 5672/15672, Kafka 9092.
+Mapped ports: OrdersDb 5433, CatalogDb 5434, InventoryDb 5435, PaymentsDb 5436, NotificationsDb 5437, RabbitMQ 5672/15672, Kafka 9092, Prometheus 9090, Grafana 3000, Tempo 3200, applications 5101–5106.

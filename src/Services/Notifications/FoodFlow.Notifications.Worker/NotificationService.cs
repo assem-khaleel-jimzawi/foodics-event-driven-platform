@@ -70,6 +70,7 @@ public sealed class NotificationService(NotificationsDbContext db)
         });
 
         await db.SaveChangesAsync(cancellationToken);
+        FoodFlowTelemetry.Notifications.Add(1, new KeyValuePair<string, object?>("type", type));
     }
 }
 

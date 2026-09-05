@@ -11,12 +11,13 @@ public sealed class OutboxMessage
     public string Payload { get; set; } = string.Empty;
     public string Destination { get; set; } = MessageDestinations.RabbitMq;
     public string? Topic { get; set; }
+    public string? TraceParent { get; set; }
     public DateTimeOffset OccurredAtUtc { get; set; }
     public DateTimeOffset? PublishedAtUtc { get; set; }
     public int AttemptCount { get; set; }
     public string? LastError { get; set; }
 
-    public static OutboxMessage ToRabbitMq(object message, DateTimeOffset occurredAtUtc)
+    public static OutboxMessage ToRabbitMq(object message, DateTimeOffset occurredAtUtc, string? traceParent = null)
     {
         var type = message.GetType();
         return new OutboxMessage
@@ -25,11 +26,12 @@ public sealed class OutboxMessage
             MessageType = type.FullName ?? type.Name,
             Payload = IntegrationSerializer.Serialize(message, type),
             Destination = MessageDestinations.RabbitMq,
-            OccurredAtUtc = occurredAtUtc
+            OccurredAtUtc = occurredAtUtc,
+            TraceParent = traceParent
         };
     }
 
-    public static OutboxMessage ToKafka(object message, DateTimeOffset occurredAtUtc)
+    public static OutboxMessage ToKafka(object message, DateTimeOffset occurredAtUtc, string? traceParent = null)
     {
         var type = message.GetType();
         return new OutboxMessage
@@ -39,7 +41,8 @@ public sealed class OutboxMessage
             Payload = IntegrationSerializer.Serialize(message, type),
             Destination = MessageDestinations.Kafka,
             Topic = ContractTypes.KafkaTopicFor(type),
-            OccurredAtUtc = occurredAtUtc
+            OccurredAtUtc = occurredAtUtc,
+            TraceParent = traceParent
         };
     }
 }

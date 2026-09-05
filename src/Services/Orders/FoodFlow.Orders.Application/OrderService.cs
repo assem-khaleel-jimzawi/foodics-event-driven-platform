@@ -51,6 +51,7 @@ public sealed class OrderService(IOrderStore store)
         store.Enqueue(created, now);
         store.Enqueue(reserve, now);
         await store.SaveChangesAsync(cancellationToken);
+        FoodFlow.Messaging.FoodFlowTelemetry.OrdersCreated.Add(1);
         return Map(order);
     }
 
@@ -76,6 +77,7 @@ public sealed class OrderService(IOrderStore store)
         order.Confirm();
         store.Enqueue(new OrderConfirmed(Guid.NewGuid(), order.Id, DateTimeOffset.UtcNow, message.CorrelationId));
         await store.SaveChangesAsync(cancellationToken);
+        FoodFlow.Messaging.FoodFlowTelemetry.OrdersConfirmed.Add(1);
     }
 
     public async Task HandlePaymentFailedAsync(Contracts.Payments.PaymentFailed message, CancellationToken cancellationToken)
@@ -96,6 +98,7 @@ public sealed class OrderService(IOrderStore store)
         store.Enqueue(new OrderCancelled(Guid.NewGuid(), order.Id, message.Reason, now, message.CorrelationId), now);
         store.Enqueue(new ReleaseInventory(Guid.NewGuid(), order.Id, now, message.CorrelationId), now);
         await store.SaveChangesAsync(cancellationToken);
+        FoodFlow.Messaging.FoodFlowTelemetry.OrdersCancelled.Add(1);
     }
 
     public async Task HandleInventoryReservationFailedAsync(InventoryReservationFailed message, CancellationToken cancellationToken)
@@ -114,6 +117,7 @@ public sealed class OrderService(IOrderStore store)
         order.Cancel();
         store.Enqueue(new OrderCancelled(Guid.NewGuid(), order.Id, message.Reason, DateTimeOffset.UtcNow, message.CorrelationId));
         await store.SaveChangesAsync(cancellationToken);
+        FoodFlow.Messaging.FoodFlowTelemetry.OrdersCancelled.Add(1);
     }
 
     private static OrderResponse Map(Order order) =>

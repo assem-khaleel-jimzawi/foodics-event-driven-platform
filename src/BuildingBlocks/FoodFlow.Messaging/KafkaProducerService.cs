@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Confluent.Kafka;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -22,7 +23,9 @@ public sealed class KafkaProducerService : IKafkaProducer, IDisposable
             BootstrapServers = options.Value.BootstrapServers,
             Acks = Acks.All,
             EnableIdempotence = true,
-            ClientId = "foodflow-outbox"
+            ClientId = "foodflow-outbox",
+            MessageTimeoutMs = 10_000,
+            RequestTimeoutMs = 5_000
         };
         _producer = new ProducerBuilder<string, string>(config).Build();
     }
@@ -30,16 +33,23 @@ public sealed class KafkaProducerService : IKafkaProducer, IDisposable
     public async Task ProduceAsync(string topic, string key, object value, CancellationToken cancellationToken)
     {
         var json = IntegrationSerializer.Serialize(value, value.GetType());
+        var headers = new Headers
+        {
+            new Header("message-type", System.Text.Encoding.UTF8.GetBytes(value.GetType().FullName ?? value.GetType().Name))
+        };
+
+        if (Activity.Current?.Id is { Length: > 0 } traceParent)
+        {
+            headers.Add("traceparent", System.Text.Encoding.UTF8.GetBytes(traceParent));
+        }
+
         var result = await _producer.ProduceAsync(
             topic,
             new Message<string, string>
             {
                 Key = key,
                 Value = json,
-                Headers =
-                [
-                    new Header("message-type", System.Text.Encoding.UTF8.GetBytes(value.GetType().FullName ?? value.GetType().Name))
-                ]
+                Headers = headers
             },
             cancellationToken);
 

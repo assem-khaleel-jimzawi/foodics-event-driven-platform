@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using FoodFlow.Contracts;
@@ -188,6 +189,39 @@ public sealed class OrderWorkflowTests(FoodFlowFixture fixture)
             count => count >= 1,
             TimeSpan.FromSeconds(20),
             "reserve-inventory_error to receive the poison message");
+    }
+
+    [Fact]
+    public async Task Health_and_metrics_endpoints_are_live()
+    {
+        var live = await fixture.Orders.GetAsync("/health/live");
+        live.EnsureSuccessStatusCode();
+        var liveBody = await fixture.ReadJsonAsync(live);
+        liveBody.GetProperty("status").GetString().Should().Be("Healthy");
+
+        var ready = await fixture.Orders.GetAsync("/health/ready");
+        ready.EnsureSuccessStatusCode();
+
+        var metrics = await fixture.Orders.GetAsync("/metrics");
+        metrics.EnsureSuccessStatusCode();
+        var text = await metrics.Content.ReadAsStringAsync();
+        text.Should().Contain("#");
+        text.Should().Contain("process_");
+    }
+
+    [Fact]
+    public async Task Order_response_echoes_correlation_id()
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/orders")
+        {
+            Content = JsonContent.Create(FoodFlowFixture.OrderBody(DemoScenarios.DefaultCustomerId, DemoScenarios.InStockProductId))
+        };
+        request.Headers.TryAddWithoutValidation("X-Correlation-Id", "phase3-trace-demo");
+
+        var response = await fixture.Orders.SendAsync(request);
+        response.EnsureSuccessStatusCode();
+        response.Headers.TryGetValues("X-Correlation-Id", out var values).Should().BeTrue();
+        values!.Should().Contain("phase3-trace-demo");
     }
 
     [Fact]

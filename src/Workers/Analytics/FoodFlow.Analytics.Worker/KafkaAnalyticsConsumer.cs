@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Confluent.Kafka;
 using FoodFlow.Messaging;
 using Microsoft.Extensions.Options;
@@ -78,7 +79,17 @@ public sealed class KafkaAnalyticsConsumer(
                     continue;
                 }
 
-                var typeName = ReadMessageType(result.Message.Headers);
+                var typeName = ReadHeader(result.Message.Headers, "message-type");
+                var traceParent = ReadHeader(result.Message.Headers, "traceparent");
+                using var activity = FoodFlowTelemetry.StartFromParent(
+                    "analytics.consume",
+                    ActivityKind.Consumer,
+                    traceParent);
+                activity?.SetTag("messaging.system", "kafka");
+                activity?.SetTag("messaging.destination", result.Topic);
+                activity?.SetTag("messaging.kafka.partition", result.Partition.Value);
+                activity?.SetTag("messaging.kafka.offset", result.Offset.Value);
+
                 if (string.IsNullOrWhiteSpace(typeName))
                 {
                     logger.LogWarning("Analytics skipped a Kafka record without message-type at {Topic}:{Offset}", result.Topic, result.Offset.Value);
@@ -86,6 +97,7 @@ public sealed class KafkaAnalyticsConsumer(
                     continue;
                 }
 
+                var started = Stopwatch.GetTimestamp();
                 try
                 {
                     var type = ContractTypes.Resolve(typeName);
@@ -102,8 +114,17 @@ public sealed class KafkaAnalyticsConsumer(
                 }
                 catch (PermanentMessagingException exception)
                 {
+                    activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
+                    FoodFlowTelemetry.ConsumerFailures.Add(1, new KeyValuePair<string, object?>("component", "kafka"));
                     logger.LogError(exception, "Analytics skipped an unknown payload at {Topic}:{Offset}", result.Topic, result.Offset.Value);
                     consumer.Commit(result);
+                }
+                finally
+                {
+                    FoodFlowTelemetry.EventProcessingDuration.Record(
+                        Stopwatch.GetElapsedTime(started).TotalMilliseconds,
+                        new KeyValuePair<string, object?>("component", "kafka"),
+                        new KeyValuePair<string, object?>("destination", result.Topic));
                 }
             }
         }
@@ -115,9 +136,9 @@ public sealed class KafkaAnalyticsConsumer(
         return Task.CompletedTask;
     }
 
-    private static string? ReadMessageType(Headers? headers)
+    private static string? ReadHeader(Headers? headers, string key)
     {
-        if (headers is null || !headers.TryGetLastBytes("message-type", out var bytes))
+        if (headers is null || !headers.TryGetLastBytes(key, out var bytes))
         {
             return null;
         }

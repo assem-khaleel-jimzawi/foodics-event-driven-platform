@@ -20,3 +20,5 @@ jobs:
         run: dotnet build --no-restore --configuration Release
       - name: Test
         run: dotnet test --no-build --configuration Release --verbosity normal
+      - name: Validate Docker Compose
+        run: docker compose config --quiet

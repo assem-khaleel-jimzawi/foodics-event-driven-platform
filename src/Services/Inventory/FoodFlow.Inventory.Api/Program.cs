@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddFoodFlowServiceDefaults("foodflow-inventory", deliveryPhase: 2);
+builder.AddFoodFlowServiceDefaults("foodflow-inventory", deliveryPhase: 3);
 builder.AddFoodFlowFallbackExceptionHandler();
 builder.AddInventoryInfrastructure();
 builder.AddFoodFlowRabbitMq(bus =>
