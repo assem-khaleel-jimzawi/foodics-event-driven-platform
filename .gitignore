@@ -11,6 +11,9 @@
 # Certificates / private keys (never commit real ones)
 *.pem
 
+# Local editor working directories
+.cursor/
+
 # Local PostgreSQL data if created inside the repo
 .pgdata/
 

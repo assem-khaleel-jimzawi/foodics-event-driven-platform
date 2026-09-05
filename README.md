@@ -2,7 +2,7 @@
 
 A production-minded event-driven restaurant platform built with .NET microservices, PostgreSQL, RabbitMQ, Kafka, Docker, and OpenTelemetry.
 
-This repository is a Foodics-style backend assignment. It is **not** a toy CRUD app and **not** a production deployment. The design is production-minded; the running demo is a local system you can explain line by line.
+This repository is a Foodics-style backend assignment: a **production-minded demonstration** of event-driven .NET microservices. It is a local system you can run and explain, not a production deployment.
 
 ## Why This Project Exists
 
@@ -109,12 +109,7 @@ Lightweight choreography. If inventory is reserved and payment fails, `ReleaseIn
 
 ## Docker
 
-```bash
-docker compose up --build -d
-docker compose ps
-```
-
-Infrastructure: PostgreSQL × 5, RabbitMQ, Kafka (KRaft, no ZooKeeper), Prometheus, Tempo, Grafana. Applications are also in Compose.
+`docker compose` runs the full local stack: PostgreSQL × 5, RabbitMQ, Kafka (KRaft, no ZooKeeper), Prometheus, Tempo, Grafana, and the application services. Commands are under **Running Locally**.
 
 ## Observability
 
@@ -191,19 +186,14 @@ Then poll `GET /api/orders/{id}`, `GET /api/payments/by-order/{id}`, `GET /api/n
 
 ## Production Considerations
 
-This is a demo of production *patterns*, not a production *deployment*. Missing for production: authn/authz, secret management, dedicated migrate jobs, broker HA, backup/PITR, autoscaling, and real payment/SMS providers.
+This is a demo of production *patterns*, not a production *deployment*. Missing for production: authn/authz, secret management, dedicated migrate jobs, broker HA, backup/PITR, autoscaling, a real APM backend, and real payment/SMS providers. Do not add Kubernetes, Redis, or Elasticsearch unless a later assignment requires them.
 
 ## Trade-offs
 
 No MediatR, no generic repository, no Unit of Work wrapper over `DbContext`. The outbox poller is explicit rather than MassTransit EF outbox so Kafka and RabbitMQ share one table. Analytics state is an in-memory projection fed by Kafka; replay is the source of truth.
-
-## Future Improvements
-
-Production would add auth, secret management, broker HA, backups, and a real APM backend. This repo stops at a demonstrable local platform. Do not add Kubernetes, Redis, or Elasticsearch unless a later assignment requires them.
 
 ## Three-phase roadmap
 
 1. **Phase 1** — foundation, Orders/Catalog, PostgreSQL, tests, docs.
 2. **Phase 2** — event-driven order processing with RabbitMQ + Kafka.
 3. **Phase 3** — observability, quality, and delivery automation.
-4. **Final audit** — security review, clean Compose E2E, runbook, and interview demo (this does not add a new architecture phase).
